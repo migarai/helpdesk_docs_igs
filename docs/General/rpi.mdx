@@ -1,0 +1,32 @@
+---
+sidebar_position: 2
+---
+
+# Stock RPI Configurations
+Every RPI is pre-configured with some configurations for testing. What happens when a installing a setup is re-writing the previous configuration.
+
+## Default OpenVPN Configuration
+This is usefull when you need **SSH to RPI** but other methods ([Through RMS](/docs/newSetup)) not working properly.
+1. Make sure client powered RPI correctly.
+2. Go to [OpenVPN CloudConnexa](https://infinitum360.openvpn.com/hosts)
+3. Find a host named [**DEFAULT RPI**](https://infinitum360.openvpn.com/hosts/73cd9c57-0e3e-4c11-8319-2e94d258a35f). <span style={{ color: "red"}}> If this is **Offline** when you are setting up the RPI, It means there is an issue in RPI. </span>
+   ![Default OpenVPN](/images/openvpn.default.png)
+
+4. Connect to OpenVPN in your local PC.
+5. Using **PuTTy** (Terminal etc) SSH to the RPI by **Using OpenVPN connector IP**.
+   ![OpenVPN Default Connector](/images/openvpn.default.connector.png)
+
+## Alternative Ways to SSH RPI
+The **Default** way of connecting to the RPI through the [**RMS**](/docs/newSetup#steps). In some case you wont be able to use this method to SSH RPI. Here are some other method that can be used.
+
+1. Using the **OpenVPN**.
+   When configuring a RPI, a custom openVPN configuration is done related to the client and site. First of all make sure that the **OpenVPN connector related to the RPI is online**. If not follow the below step to make it online.
+   * Using **IGS Dashboards**.  
+    Go to `IGS Portal` >> `IOT Dashboard`. Search and select the dashboard of the related project.  
+    ![IOT Dashboard](/images/iotdashboard.png)  
+    This will shows the details related to the site and it's installed RPIs.  
+    By clicking the `Restart VPN` will send a request to the RPI to restart OpenVPN.  
+
+2. Using **Ngrok**. 
+   
+

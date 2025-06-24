@@ -1,0 +1,95 @@
+# Migrating Router RMS 
+
+:::warning
+ This is should be done with caution. If a router couldn't connect to a RMS, client have to move to the site to reconnect router to RMS.
+:::  
+
+This is about migrating **Teltonika Router** from one Region to another (example: Moving router from **AUS RMS** to **UK RMS**). 
+
+* Best Parctices 
+  * Open two **ClickUps** related to the project.  
+  * Use two seperate browser windows for better view.
+  * Find the router's current RMS.
+  * Update the current **ClickUP Activity** as you go.  
+    ![RMS Migrations CLickUp](/images/rmsmigration.clickup.png)
+
+## Installing Ngrok Agent
+
+1. SSH to the RPI by current RMS.  
+2. Install **[Ngrok](/docs/essentials#ngrok-installation)**.   
+   (Use `curl` method instead of `npm`.)  
+3. You must **Configure the Ngrok with your token**. 
+4. Create custom tunnels by editing `config` file.  
+    ```bash
+     ngrok config edit
+    ```  
+    This will opens the `config` file in `nano`. The final file should be like this. 
+    ```yaml
+    version: "3"
+    agent:
+        authtoken: 2lzztjZonSd85bbS1a138CUveWB_5B4DgAP4jH4UUFKFnwuuf
+
+    tunnels:
+        router:
+            proto: http
+            addr: 192.168.1.1:80
+    rpi:
+        proto: tcp
+        addr: 22
+    ```  
+    :::tip
+     We are creating a seperate **tunnel to the RPI** through **Ngrok** as a precaution if we lost the RMS connection to the router we will be able to access RPI through this tunnel. 
+    :::
+5. Install the `config` file. 
+   :::note
+    To find the config location.  
+    ```bash
+     ngrok config check
+    ```
+   :::  
+   ```bash
+    ngrok service install --config .config/ngrok/ngrok.yml
+   ```
+6. Start the **Ngrok Service**.  
+   ```bash
+    sudo ngrok service start
+   ```  
+
+## Creating Tunnels
+7. Now go to your Ngrok account and check wheather new session is created.  
+   ![Ngrok Agents](/images/ngrok.agents.png)
+8. When click it shows the created tunnels to the router and RPI.  
+   ![Ngrok Agent Tunnels](/images/ngrok.agents.tunnels.png)  
+   ex: `https://f212-80-233-52-162.ngrok-free.app` - Tunnel to the router.  
+   By extracting the `address` and `port` from RPI tunnel, Can initiate a **SSH connection to the RPI** through terminal or PUTTy.   
+   ```bash
+    ssh pi@<address> -p <port>
+   ```
+9. HTTPS URL directs to the **Teltonika Router WebUI** . (<span style={{ color: "red"}}>If it is only white screen or taking too much time to loading, it means connection is unstable. It is best to proceed later when having a better connection.</span>)  
+10. Use default router credentials added when setting up the router. (If default credentials not working, have to change the credentials to default through client.)   
+    `username`: `admin`   
+    `password`: `Igs@i360.lk`  
+11. After login to the router, `Services` >> `Cloud Solutions` >> `RMS`.   
+    (UI may differ based on firmware. Looks "Reconnect", "Reset" buttons. )  
+    ![RMS Cloud Service](/images/router.rms.png)  
+## Moving the Router. 
+12. Open the RMS that router should move. `Devices` >> `Add Device`.  Fill the required fields. **Do not submitt**.  
+:::caution
+ Make sure having a stable connection with router. Connected to the RPI through Ngrok and RMS before proceeding
+:::  
+13. Remove the router from **current RMS**. `Action` >> `Device` >> `Unregister Device`.  This wil remove the router from current RMS and disconnect open sessions in router.
+14. After router removed from previous RMS quikly click `submit` button to add thr Router to the new RMS.  
+15. When reconnecting the router started, (There will be message like *Waiting for connection*) `Connect` button appears replacing others. Click it to connect the router to new RMS.   
+    ![Router Migration](/images/router.migration.png)  
+16. Then acces the RPI through **new RMS**. Make sure everything is working fine. 
+
+## Cleaning Up 
+:::tip
+Ngrok free version only supports **one agent** at time. We need to remove the agent from the RPI befor finishing.  
+:::  
+1.  Stop the current tunnel and uninstall the configuration.
+    ```bash
+    sudo ngrok service stop && sudo ngrok service uninstall
+    ```
+
+    

@@ -1,0 +1,237 @@
+---
+sidebar_position: 4
+sidebra_label: "New Setup"
+---
+
+<!-- 
+    In Vs Code,
+    ctrl + k , v -- to view in side
+    crtl + shift v -- to preview
+    TODO: Adding a router to rms
+ -->
+
+# Adding A New SetUp
+Other Docs
+<!-- * [issues](/issues.md)
+* [Essentials](/essentials.md)
+* [Documenting](/documenting.md) -->
+
+## Prerequisite
+
+1. Checking the ClickUp task related to the setup.
+
+    * Check the site detailes are correctly filled. If the required     fields are not filled get the details before proceeding.
+    <!-- ![A general table looks like this,](/images/) -->
+        
+2. Necessory tools
+   
+    * Random String generator - For creating serial for the devices.    
+        recommand: **[random.org](https://www.random.org/strings/?num=5&len=10&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new)**.
+    * UUID generator.
+        recommand: **[uuidgenerator.net](https://www.uuidgenerator.net/)**
+    * Windows Clip Board. enable by `win + v`
+
+## Adding Router to The RMS
+1. Client will send you a router pic.
+   ![Teltonica Router](/images/client.router.png)
+2. keep these details. (Notepad)
+   Testing this to extract text [editpad.org](https://www.editpad.org/tool/extract-text-from-image)
+   * `SERIAL`, `MAC`,
+   * `USERNAME`, `PASSWORD` - This is router hardware password.
+   * `WIFI PASSWORD` - SSID password.
+3. Login to go to the related RMS account (based on region).
+4. Search `SERIAL` in devices section to check wheather used one or not. <span style={{ color: "red" }}>It's recommend to check on both regions because some systems are moved from one region to another.</span>
+5. In "Devices" section, Go to `Add`,
+   ![RMS Add Devices](/images/rms.adddevice.png)
+   `Name` - "client-site" ex:- *Duro - Wilberforce Court*
+   `Serial number` - `SERIAL` from the router. ex: *6000643772*
+   `LAN MAC Address` - `LAN MAC` from the router. ex: *2097270EC681*
+   `Password` - Router password. ex: *n1BOWfi9*
+6. To active `Manage service`
+   `Devices` >> `Verify device` then enter the `PASSWORD` (router password).
+7. If the router is not online after few minutes. Contact client to restart the router.
+8. After router online, Go to `Web UI`.
+   ![Web UI](/images/rms.device.webui.png)
+9. Login using router `USERNAME` (admin), `PASSWORD` to **Web UI**. When You Login to the device first time. You need to set up new password.
+    `username` : `admin`
+    `password`:  `Igs@i360.lk`
+10. If there is a **Firmware Update** perform it before proceeding. You need to log again after update.
+    ![RMS Firmware Update](/images/rms.firmware.update.png)
+11. Go to `Network` >> `Mobile` >> `SIM Switch`. Configure each **SIM**.
+    * **SIM 1**
+      *   `Check interval`: `300`
+      *   `No network`: `True`
+      *   `On network denied`: `True`
+      *   `On data connection fail`: `True`
+  
+    * **SIM 2**
+      * `Check interval`: `300`
+      * `No network`: `True`
+      * `On network denied`: `True`
+      * `On data connection fail`: `True`
+      * `Switch to next SIM after delay`: `True`
+      * `Initial delay(min)`: `60`
+  
+    Save and Apply the settings. Then **Enable** SIM in the table.
+    ![SIM Switch](/images/rms.simswitch.png)
+12. `Network` >> `LAN`. Check these settings.  
+    `IPv4 address`: `192.168.1.1`  
+    `Ipv4 netmask`: `255.255.255.0`  
+    `Use WAN port as LAN`: `True`  
+    `Enable DHCPv4`: `True`  
+    `Enable DHCPv6`: `True`  
+    Save and Apply.
+    ![LAN Settings](/images/rms.lan.settings.png)
+13. Go to `Network` >> `Wireless` >> `SSIDs`. Check these settings   
+    Under the "general setup"  
+    `Passwoard`: `Irongate@123`
+14. Exit the **Web UI**. Go to `Ports`.  
+    ![RMS Ports](/images/rms.ports.png)  
+    Add the device (ex: *192.168.1.150 is a RPI*)  
+    `Name`: Device name (ex: *RPI*)  
+    `Protocol`: `SSH`  
+    `Port`: `22`   
+15. Go to `Remote Access` >> Connect to RPI.   
+    ![RMS Connect](/images/rms.connect.png)  
+16. Continue in steps(9).  
+
+
+## Steps
+
+1. Find the correct IGS portal from the site list.  
+    Example:
+    If the provided client name is this.
+    ![client name](/images/client.name.png)   
+    search **bw** in the **[bookmarks list](https://360holdings-my.sharepoint.com/:u:/g/personal/migaram_i360_lk/EVOdL1IgjWFBg1NhftKe9xQBLrl6Tw6wRkjXmbq6eRo7mA?e=2flNSR)**
+    The realated site should be this   
+    ![client site](/images/client.site.png)
+
+2. Login to the portal.  
+   ![site login](/images/soite.login.png)   
+   email: `matheeshar@i360.lk`   
+   passowrd: `Matheesha@12345`   
+   <span style={{ color: "red" }}>\* if encountered passowrd issue, remove `@` from the password</span>
+
+3. Create a IoT thing.
+   IoT thing is used to connect everything
+   ![Site home IOT](/images/site.home.iot.png)
+   * Tips:
+     * Copy the previous **BatchCode**
+        ![Batch Code](/images/client.site.batchcode.png)
+
+    i. Go to`Add new IOT thing` to create IoT thing.   
+    ii. Get a string from [random.org](#prerequisite) for `Serial Number`.   
+    iii. Use the previously copied bathc code for `Batch Code`.   
+    ![IOT Thing](/images/client.iot.thing.png)
+
+4. Adding a device
+
+   i. Go to `Devices`.  
+   ii. Go to `Add new device`.   
+   iii. Select the `Device Type`. Reffer [Device Types](#device-types-in-igs-portal) and fill the fields accordingly.
+
+5. Update the project
+   
+    i. Go to the `Projects`.   
+    ii. Go to the related project. (Search the site name.)  
+    ![Project](/images/client.project.png)  
+    iii. Go to the `Update Details` >> `Update`. Check these settings.  
+     * Irongate Integration - Enable.
+     * Status - Active
+     * Time Zone - Add the correct time zone. ex: *Australia/ Sydney*
+     * Alternative Zone - Add a name if needed.  
+    iv. Go to `Add New Gate` and add a gate.  ex: *Gate 01*  
+    v. Go to the Created gate (*Gate 01*).  
+    vi. Click on `Attach a Device`. Select the created device from the list. (Controller first).   
+    ![Attach Device](/images/client.attachdevice.png)
+    ![Attach Device 2](/images/client.attachdevice.2.png)
+
+6. Syncing the project  
+   Assignong workers to a Project.  
+   i. Go to `Sync`, in **Worker** section go to `Worker Logs`, in **Run Sync** section go to `Sync now`.  
+   ii. Toggle `Sync Project`, then `Next`.  
+   iii. Select the related project.  
+   iv. `Save` 
+
+7. Update the Devices  
+   i. Go to Each device and update at least two times. <span style={{ color: "red" }}>Important</span>
+
+8. Adding to AWS IoT
+   1. Go to [AWS IOT Core](https://eu-north-1.console.aws.amazon.com/iot/home?region=eu-north-1#/home)
+   2. Go to `All devices` >> `Things` >> `Create things` >> `Create single thing` and create a thing
+   3. In thing oage go to `Certificates`. Select the cerifcate Id.
+   4. Go to `Attach Policies`, Select `iot_policy`
+   
+9.  Configuring RPI
+  i. Go to the RMS devices [here](/essentials.md#rms-login)  
+  ii. Select the related device then `Ports`.  
+    ![Add Remote](/images/rms.router.png)  
+  iii. Go to plus icon after the IP to **Add New Remote**  
+     Name: ex: *RPI*  
+     Protocol: SSH  
+     Port: 22  
+  iv. After page refresh, `Remote Access` >> Play button (Remote connect).  
+     ![Remote Connect](/images/rms.remoteaccess.png)  
+  v. Logint to RPI ([Refer this](/essentials.md#rpi-login))  
+  vi. Change RPI **hostname** (if "new-setup") to site name.[(hostname change)](/essentials.md#rpi-hostname)  
+  vi. Configure **RPI** with **OpenVPN**. [steps](/essentials.md#openvpn-and-rpi)  
+  vii. Configure **RPI** with **VPS**. [steps](/essentials.md#vps). (Now using [Ngrok with remote connection](/essentials.md#ngrok-remote-connection))   
+  viii. Setting up environment. ([env config](/essentials.md#env-config))    
+  ix. Login to **AWS** ([aws login](/essentials.md#aws-login))  
+1.   Change the IPs of the devices accodrding to the [ip distributu] ([SADP](/essentials.md#sadp))  
+2.   Configure devices usin **iVMS-4200**. [steps](/essentials.md#ivms-4200)   
+## Additiona Details
+
+### Device types in IGS Portal
+
+ 1. Option 1 : `CONTROLLER`
+ 2. Option 2 : `LOCK`
+ 3. Option 3 : `FACIAL RECOGNITION`.
+    Connecting **FR** to system.
+
+    ![FACIAL RECOGNITION](/images/client.fr.png)
+
+    `Device Name`: Name of the device. ex: *Amazon 02 - Turnstile 1*.
+    `Device Serial No`: A **UUID** from [uuidgenerator.net](#prerequisite)
+
+ 4. Option 4 : `ACCESS CONTOLLER`.
+   Normally, only use this for pedestrain Gate with Key Fobes.
+
+   ![ACCESS CONTROLLER](/images/client.accessscontroller.png)
+
+    `Device Name`: Name of the device. ex: *Amazon 02 - Pedestrain Gate 01*
+    `Device Serial No`:  A **UUID** from [uuidgenerator.net]
+
+ 5. Option 5 : `IOT CONTROLLER`
+    Connect `IoT Thing` to system.
+
+    ![IOT CONTROLLER](/images/client.iotcontroller.png)
+
+    `Device Name`: Name of the device ex: *Amazon 02 - Controller*.
+    `Device Serial No`: The **Random String** used in **IoT Thing** .
+
+### Attaching Device into Gate
+
+   1. IoT Controller
+        Open VPN ID: Reffer [This](#open-vpn-id) for getting Opne VPN Id.
+        RMS Id: Reffer [This](#rms-id) for find RMS id.
+
+
+
+### Open VPN Id
+
+
+### RMS Id
+This is the Id of the Router that Related to the RPI.
+1. Go to **[Teltonika](https://rms.teltonika-networks.com/management/devices)**. Login using personal account for AUS related projects, use this for other.
+    username: `team.mw@i360.lk`
+    password: `MW@i360.lk`
+
+2. Find the router related to the site and go to device details.
+   ![Router Details](/images/teltonika.router.png)
+
+3. In the page **URL**, last segmant use as the **RMS Id**.
+   ![RMS ID](/images/rmsid.png)
+   RMS ID: `1550528`
+
+### 

@@ -1,0 +1,98 @@
+# Examination
+
+:::warning
+ Make sure to change necessary parameters (**employee_id**, **device ip**) changed before using the commands
+:::
+
+:::tip
+ [Getting the Employee_ID](/docs/essentials#getting-employee-id)
+:::
+
+## Check Devices Connected to RPI
+ This is a short command for **nmap scan** which returns the devices connected to the same network as RPI.
+  ```bash
+   scan
+  ```
+
+## Getting The User Counts  
+This prompt can be used to get the user count for each reader/ Scanner.  
+* FR - **192.168.1.165**  
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.165/ISAPI/AccessControl/UserInfo/Count?format=json && cat ./output.log && echo '' >> ./output.log
+  ``` 
+* FR - **192.168.1.166**  
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.166/ISAPI/AccessControl/UserInfo/Count?format=json && cat ./output.log && echo '' >> ./output.log
+
+  ```
+* Getting the **card count**  
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.175/ISAPI/AccessControl/CardInfo/Count?format=json && cat ./output.log && echo '' >> ./output.log
+  ```
+  As shown above **change the IP address** according to the device.  
+
+## Get Details of a User
+This prompt fetch the user details for a selected user using **Employee ID**.  ([Getting the Employee_ID](/docs/essentials#getting-employee-id)).  
+ ```bash
+  touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.166/ISAPI/AccessControl/UserInfo/Search?format=json --post-data '{"UserInfoSearchCond":{"maxResults": 10,"searchID":"1","searchResultPosition":0,"EmployeeNoList":[{"employeeNo":"67e50fd7193fbd0a3aba8b7e"}]}}' && cat ./output.log && echo '' >> ./output.log
+ ```
+
+## Get User Card/QR/PIN Details From a Device 
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.175/ISAPI/AccessControl/CardInfo/Search?format=json --post-data '  {"CardInfoSearchCond":{"searchID":"1","searchResultPosition":0,"maxResults":100,"EmployeeNoList":[{"employeeNo":"66ebb1ce785b304e6e3110ca"}]}}' && cat ./output.log && echo '' >> ./output.log
+  ```
+
+## Get User Image Details From a Device 
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.165/ISAPI/Intelligent/FDLib/FDSearch?format=json --post-data '{"maxResults": 10,"searchResultPosition":0,"faceLibType":"blackFD","FDID":"1","FPID":"66db0817785b304e6ef10c60"}' && cat ./output.log && echo '' >> ./output.log
+  ```
+
+## Get Health/Time of a device  
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.17/ISAPI/System/time && cat ./output.log && echo '' >> ./output.log
+  ```
+
+## Get System Time Zone Details of a Device
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.165/ISAPI/System/time/timeZone && cat ./output.log && echo '' >> ./output.log
+  ```
+
+## Get NTP Server Details of a Device
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.165/ISAPI/System/time/ntpServers && cat ./output.log && echo '' >> ./output.log
+  ``` 
+
+## Download User Image From Device
+  ```bash
+   wget --user-agent=insomnia/2023.4.0 --header='X-Content-Type-Options: nosniff' --header='Content-Type: image/jpeg' --user=admin --password=Hik12345 'http://192.168.1.166/LOCALS/pic/enrlFace/0/0000000184.jpg'
+  ```
+
+## Extract Docker Logs From RPI
+  1. Access to the RPI
+  2. Create a log file containing logs
+     ```bash
+      docker logs --since <date> ig-client > <log_file_name> 
+     ``` 
+     Replace with correct data.
+     ```bash
+      docker logs --since 2023-10-01T14:00:00 ig-client > logs.since.1.10.23.txt 
+     ```
+  3. 
+
+## Get Mask Detection Configuration
+  ```bash
+    -- IN
+    touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Igs@i360.lk http://192.168.1.165/ISAPI/AccessControl/maskDetection?format=json && cat ./output.log && echo '' >> ./output.log
+
+    -- OUT
+    touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.165/ISAPI/AccessControl/maskDetection?format=json && cat ./output.log && echo '' >> ./output.log
+  ```
+
+## Get Face Liveliness Settings on Devices
+ ```bash
+  -- IN
+  touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.165/ISAPI/AccessControl/FaceRecognizeMode?format=json && cat ./output.log && echo '' >> ./output.log
+
+  -- OUT
+  touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.166/ISAPI/AccessControl/FaceRecognizeMode?format=json && cat ./output.log && echo '' >> ./output.log
+ ```

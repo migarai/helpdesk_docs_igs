@@ -1,0 +1,37 @@
+# HAC Issues
+
+## Cards Not Pushing to the HAC When Resyncing (Ref env) 
+This happening due to cached data still available in RPI, skipping the card/qr to avoid duplication. 
+
+1. Stop the **pm2** instance.  
+   ```
+   pm2 stop all 
+   ```  
+2. Delete the existing data from the HAC. (Its recommend to note the exist count before deleting.)  
+   ```
+   curl --request PUT \
+   --url 'http://192.168.1.175:80/ISAPI/AccessControl/UserInfoDetail/Delete?format=json' \
+   --header 'Accepts: application/json' \
+   --header 'Content-Type: application/json' \
+   --header 'Content-Type	: application/json' \
+   -u "admin:Hik12345" \
+   --digest \
+   --data '{
+   "UserInfoDetail":{
+	 "mode":"all",
+	 "EmployeeNoList":[]
+   	 }
+   }'
+   ```
+3. Check if the cards deleted successfully.  
+   ```
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.175/ISAPI/AccessControl/UserInfo/Count?format=json && cat ./output.log && echo '' >> ./output.log
+   ```  
+4. Delete content inside the **db** directory.  
+   ```
+   rm -rf ~/v2Client/db/*
+   ```
+5. Start service again. Make sure you select the “v2Client” directory.  
+   ```
+   pm2 start ecosystem.config.js 
+   ```  

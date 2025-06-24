@@ -1,0 +1,103 @@
+# Checking Issues
+
+## Checking an Employee
+ 1. Find the ClickUp task is related to the issue.[here](/essentials.md#clickup-for-different-regions).
+ 2. There you can find the installation report in the activity section. Get the RMS link
+   ![create](/images/clickup.activity.report.png)
+ 3. You will be directed to Teltonica RMS. Login if needed. [[reffer this.](/essentials.md#rms-login)]
+   ![RMS home](/images/teltonica.rms.png)
+ 4. Connect to the **RPI**,  With provided username and password.  
+   ```text
+     Username:  team.mw@i360.lk 
+     Password: MW@i360.lk 
+   ```
+ 5. After successfully login to the RPI, Use `scan` to run **nmap** scan on network. which shows the connected IPs, see [Default IP Distribution](/essentials.md#default-ip-distribution) for more details.
+ 6. Use this command to get data related to a employee.
+   ```bash
+    touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.165/ISAPI/AccessControl/UserInfo/Search?format=json --post-data '{"UserInfoSearchCond":{"maxResults": 10,"searchID":"1","searchResultPosition":0,"EmployeeNoList":[{"employeeNo":"<employeeId>"}]}}' && cat ./output.log && echo '' >> ./output.log
+   ```
+   <span style={{ color: "red" }}>Important:</span>
+ * Replace the **\<employeeId>** with the correct id. ([Getting employeeId](/essentials.md#getting-employee-id))
+ * Check if the correct **Device IP** used in the address.
+ 6. Output
+    * If employee not synced to the device.
+        ![Employee not synced](/images/employee.notsynced.png)
+        Fix: Restart the Docker container to re-sync all profiles to the device.([see more.](/essentials.md#restart-docker))
+    *
+    <!-- Check for more outputs -->
+
+## Not-Recorded Checkins and Checkouts
+The client will provide you with the name of an employee/ employees saying their checkins or checkouts not recorded. This can caused by,
+* Un-superviced or unexpected RPI reboot during the checks.
+* The user count in Entry/ Exit FRs are not Tallying. (Incompleted device syncs).
+* The employees haven't checked-in or checked-out from the site.
+
+**Observations and Examinations**
+* Go to the related project and check the specific employee has any checkins or checkouts. In IGS portal,  
+  `Employee` >> Select the employee >> Under the "Checkin History" >> `Check Ins`   
+  The all the checkins done by the employee will display here. Care fully check the both **Check-In** and **Check-out** are recorded correctly (<span style={{ color: "red"}}>The time is displayed in local time. Always reffer to the site's time zone.</span>). Carefully observe the these senaios,
+   * Only one checkin is recorded for a site (either check-in or check-out). 
+   * No checkins at all.
+   * Irregula checkins.
+* The above step will provide a rough idea about the issue. to further clarify, **connect to the RPI**.  
+  using the command,  
+  ```bash
+   uptime
+  ```
+  Shows the running time after the **last boot**. With this it can be determined wheather the RPI was rebooted at the checkin time.  
+  ![Uptime](/images/rpi.uptime.png)
+* Then **check the user count** in each device. <span style={{color: "red"}}>Replace the device IP</span>.   
+  ```bash
+   touch ./output.log && wget -q -O./output.log --http-user=admin --http-passwd=Hik12345 http://192.168.1.175/ISAPI/AccessControl/UserInfo/Count?format=json && cat ./output.log && echo '' >> ./output.log
+  ```
+  This outputs the **user count** in each device. Check weather all the users that related to the site are synced to the devices. (you can get the employee count for a site by, IGS portal >> `Projects`>> Select the related project >> Under the "Site Assignments `Site Assignments` >> Counting the **Active** emplyees").   
+* If the all the devices are **Synced correctly** and no issue in **RPI**. We need to check wheather the employee get scanned/ read by the device. For this we need to access the device directly. There few methods for that.  
+  * [**Through RMS Connection**](/docs/Essentials/radevices.essentials#through-rms)  
+  * [**Using Ngrok**](/docs/Essentials/radevices.essentials#using-ngrok)   
+ Taking a FR as example,  
+   :::note
+    Use the FR based on gate (entry, exit)
+   :::
+  1. Login to the Web UI. 
+  2. Go to `Search`. This will show all the logs related to the FR.  
+     Filter the logs using `Employee No` (also select the date range as needed). Check wheather log in **FR** corresponds with logs in **IGS**.  (<span style={{ color: "red"}}>The logs in FR is based on UTC of the site</span>).  
+     If the there are **no logs related to the incident**,  
+     means that there is **no reading/ scanning process assosiated with the FR**. 
+     <!-- TODO:add more details -->
+     <!-- TODO: Add images -->
+
+**Fixes**  
+* If it seems that employees didn't performed any checkins in the FR. (ex: *Have check-ins but no check-outs*). Provide the client with **detailed explanation** with **evidence** (a document) about the situation.  
+
+## Manually Pushing The Checks.  
+Due to the cases like [RPI not-responding](/docs/Issues/rpi.issues#docker-not-responding) and sync issues, The site checkins may be unreocrded or pushed unorderly. To fix that we need to push the checkins data again **after fixing the issue**.
+
+1. Access the RPI using **Ngrok** and **WinSCP**. (read the steps [here](/docs/essentials#ngrok-remote-connection)).  
+2. Create a folder `scripts` and copy these files (`/home/pi/scripts/`) of the RPI. ([**Download Files**](https://360holdings-my.sharepoint.com/:f:/g/personal/migaram_i360_lk/EqMQbn0Sz7RKqYPjWIuRb5IBoesOjmzoAWlfV37NSr_jig?e=uZnu8d))  
+   ![Script Files](/images/record.files.png)  
+3. Go back to the RPI, `cd` to the `/scropts`.  
+   Run this command to install modules/ libraries.
+   ```bash
+   yarn
+   ```
+4. Get the **date range** of the records from the client. and edit this command accordingly.
+   ```bash
+    node app.js <device_ip> <start_date_time> <end_date_time> <time_zone>
+   ``` 
+   Replace,  
+    * `device_ip` : The IP of the reader/ scanner. (Entry: `192.168.1.165`, Exit: `192.168.1.166`)  
+    * `start_date_time` : Starting date. (*ex: 2025-03-04T00:00:00*)  
+    * `end_date_time` : Ending date. (*ex: 2025-03-05T22:00:00*)  
+    * `time_zone` : Time zone. (*ex: for UK +00:00*)    
+  
+   ```bash
+    node app.js 192.168.1.165 2025-03-04T00:00:00 2025-03-05T22:00:00 +00:00
+   ```
+  :::tip
+   Get the **Entry** data first then **Exit** data.
+  :::  
+
+
+
+
+  

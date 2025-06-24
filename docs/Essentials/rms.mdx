@@ -1,0 +1,67 @@
+# RMS
+Teltonika RMS (Remote Management System) is a cloud-based platform developed by Teltonika Networks that allows you to remotely monitor, manage, and configure Teltonika networking devices such as routers and gateways.  
+
+## Adding a Router to the RPI
+1. Client will send you a router pic.  
+   ![Teltonica Router](/images/client.router.png)  
+2. keep these details. (Notepad)  
+   Testing this to extract text [editpad.org](https://www.editpad.org/tool/extract-text-from-image)  
+   * `SERIAL`, `MAC`,  
+   * `USERNAME`, `PASSWORD` - This is router hardware password.  
+   * `WIFI PASSWORD` - SSID password.  
+3. Login to go to the related RMS account (based on region).  
+4. Search `SERIAL` in devices section to check wheather used one or not. <span style={{ color: "red" }}>It's recommend to check on both regions because some systems are moved   from one region to another.</span>  
+5. In "Devices" section, Go to `Add`,  
+   ![RMS Add Devices](/images/rms.adddevice.png)  
+   `Name` - "client-site" ex:- *Duro - Wilberforce Court*  
+   `Serial number` - `SERIAL` from the router. ex: *6000643772*  
+   `LAN MAC Address` - `LAN MAC` from the router. ex: *2097270EC681*  
+   `Password` - Router password. ex: *n1BOWfi9*  
+6. To active `Manage service`  
+   `Devices` >> `Verify device` then enter the `PASSWORD` (router password).  
+7. If the router is not online after few minutes. Contact client to restart the router.
+
+## Configuring Settings
+1. After router online, Go to `Web UI`.  
+   ![Web UI](/images/rms.device.webui.png)  
+2. Login using router `USERNAME` (admin), `PASSWORD` to **Web UI**. When You Login to the device first time. You need to set up new password.  
+    `username` : `admin`  
+    `password`:  `Igs@i360.lk`  
+3.  If there is a **Firmware Update** perform it before proceeding. You need to log again after update.  
+    ![RMS Firmware Update](/images/rms.firmware.update.png)  
+4.  Go to `Network` >> `Mobile` >> `SIM Switch`. Configure each **SIM**.  
+    * **SIM 1**  
+      *   `Check interval`: `300`  
+      *   `No network`: `True`  
+      *   `On network denied`: `True`  
+      *   `On data connection fail`: `True`  
+  
+    * **SIM 2**  
+      * `Check interval`: `300`  
+      * `No network`: `True`  
+      * `On network denied`: `True`  
+      * `On data connection fail`: `True`  
+      * `Switch to next SIM after delay`: `True`  
+      * `Initial delay(min)`: `60`  
+  
+    Save and Apply the settings. Then **Enable** SIM in the table.  
+    ![SIM Switch](/images/rms.simswitch.png)  
+5.  `Network` >> `LAN`. Check these settings.    
+    `IPv4 address`: `192.168.1.1`   
+    `Ipv4 netmask`: `255.255.255.0`   
+    `Use WAN port as LAN`: `True`  
+    `Enable DHCPv4`: `True`   
+    `Enable DHCPv6`: `True`  
+    Save and Apply.
+    ![LAN Settings](/images/rms.lan.settings.png)
+6.  Go to `Network` >> `Wireless` >> `SSIDs`. Check these settings   
+    Under the "general setup"  
+    `Passwoard`: `Irongate@123`
+7.  Exit the **Web UI**. Go to `Ports`.  
+    ![RMS Ports](/images/rms.ports.png)  
+    Add the device (ex: *192.168.1.150 is a RPI*)  
+    `Name`: Device name (ex: *RPI*)  
+    `Protocol`: `SSH`  
+    `Port`: `22`   
+8.  Go to `Remote Access` >> Connect to RPI.   
+    ![RMS Connect](/images/rms.connect.png)  

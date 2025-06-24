@@ -1,0 +1,109 @@
+# Remote Accessing The Devices
+There will be special cases that we need to connect to the device(ex: FRs) directly, These are the methods that can be used to it. Most of time the purpose of directly connecting to the device is to access their **Web UI** to check logs or do device configuration.  
+
+## Using Remote Desktop Softwares
+This is the default method used when a configuring the devices during installation. [Anydesk](https://anydesk.com/en/downloads/windows) and [Team Viewer](https://www.teamviewer.com/en/download/windows/?msockid=2f2e2ef2a7b060c120a63a03a6ea612c) are the mostly used applications for this.
+
+1. Connect to the client's PC. (The PC and the devices must be in the **Same network**.)  
+2. There are two ways,  
+   * Access the devices through [**iVMS-4200**](/docs/essentials#ivms-4200) or [**SADP**](/docs/essentials#sadp)   
+   * Simply go to IP address (ex: *192.168.1.165*) through web browser and access **Web UI**. 
+
+## Through RMS  
+This is a feature provides by Teltonika like SSH to RPI.  
+
+1. Go to the related router in RMS.
+2. If not already available, need to add the device to `Remote Access`. Take a FR as a example.
+   1. Got to `Ports`. This shows connected devices to the router.  
+    ![RMS PORTS](/images/rms.ports.connect.png)   
+3. Click on "plus icon" >> Fill the fields.  
+   `name` : Suitable name (ex: *Entry FR*)  
+   `Protocol`: `HTTP`  
+   `Port`: `80`  
+   The device is available for remote access.  
+   ![FR Remote Access](/images/rms.fr.remoteac.png)  
+4. Click on "Play" button to initiate connection.  
+5. This will direct to **Web UI** of the device. login using,  
+   `username` : `admin`  
+   `password` : `Hik12345`  
+   ![RMS FR WebUI](/images/rms.fr.webui.png)  
+It may have slow response or lag based on connection. be patient 😊.
+
+## Using Ngrok  
+
+
+## Using MQTT Client
+MQTT (Message Queuing Telemetry Transport) is a lightweight, publish-subscribe messaging protocol designed for low-bandwidth, high-latency, or unreliable networks — ideal for IoT (Internet of Things) devices.  
+There is a **MQTT Client** available in the RPI. For now this only working on **<span style ={{ color:"red"}}>Legacy</span>** setups.  
+The process is MQTT request will start the **OpenVPN client** in the RPI. Then we can connect to RPI by SHH tunnel through OpneVPN IP.  
+
+1. Go to [**AWS Console**](https://ap-south-1.console.aws.amazon.com/console/home?region=ap-south-1).  
+2. Go to [**IoT Core**](https://ap-south-1.console.aws.amazon.com/iot/home?region=ap-south-1#/home).  
+3. Under the `Test`, go to `MQTT test client` >> `Publish to Topic`.  
+4. Enter topic name as below.  
+   ```text
+   production/DtVd/<organization_id>/device/command/<iot_thing_id>/restartVPN
+   ``` 
+   Replace,  
+   `organization_id` - Get from "IGS Portal" >> `Employers` >> Go to related organization >> copy the id from URL.  
+   ![MQTT Test](/images/mqtt_client.png)  
+   `iot_thing_id` - Go to project >> gate >> Controller. Copy the id from URL.  
+   ![IOT Thing ID](/images/iotthing.id.png)  
+5. Enter "Message Payload" as follows.  
+   ```text
+   {
+    "time": <time_stamp>,
+    "data": { },
+    "environment": "production"
+   }
+   ```  
+   Get `<time_stamp>` from "Developer Options" >> "Console" >> enter `new Date().getTime()` and press enter.  
+   ![Time Stamp](/images/timestamp.png)  
+
+   ![MQTT Test](/images/mqtttest.png)  
+6. Press "Publish" 
+7. After few minutes, the related **OpenVPN Client** will be online.  
+   ![OpenVPN CLient](/images/openvpnclient.png)
+8. Open and connect local **OpneVPN Connect**.  
+   ![OpenVPN Connect](/images/openvpn.connect.png)  
+9.  Innitiate a SSH connection through terminal. 
+    ```bash
+    ssh pi@<openvpn_ip>
+    ```  
+    Replace the `<openvpn_ip>`.  
+:::tip
+For the free version of OpenVPN only 3 connections can be kept online. Go to [OpenVPN](https://infinitum360.openvpn.com/status) "Status" This will shows the active connections. Disconnect them by connecting to the RPI. Use below prompt. Keep atleast two spots free before 
+```bash
+sudo systemctl stop openvpn
+```
+:::
+
+## Remote Accessing HAC
+
+1. Open **Ngrok** tunel in the RPI. 
+   ```
+   ngrok tcp 22
+   ```  
+2. Copy the address and port. Go to [**PuTTY**](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html).  
+3. In `Session` section, Do these changes.  
+   ![PuTTy Session](/images/putty.session.png)  
+   (Save the configuration for future use.)  
+4. Go to `SSH` >> `Tunnels`. Add the `Source Port`. as `1080` and select the "Destination" as **Dynamic**. Then click on "Add".
+   ![putty tunnels](/images/putty.tunnels.png)  
+5. Click on "Open" to start the session.  This will open putty cmd. Log with default credentials for RPI.  
+6. Open the [**Proxifier**](https://www.proxifier.com/)  
+   ![Proxifier](/images/proxifier.home.png)  
+7. Go to `Profile` >> `Proxy Servers` . Click "Add" to open new connection. Set the following fields as below
+   1. Address: `127.0.0.1`  
+   2. Port: `1080`
+   3. Protocol: `SOCKS Version 5`   
+   Click "Ok" and close the "proxy Servers" window.    
+   ![Proxifier Servers](/images/proxifier.servers.png)  
+8. Go to `Profile` >> `Proxification Rules`.  Click on "Add" to add a new rule.   
+   1. Name: Set a suitable name (ex: HAC)   
+   2. Target Hosts: `192.168.1.175`  
+   3. Action: `Proxy SOCKS 127.0.0.1`  
+   Click on "Ok" and close the window.  
+9. Check if the proxy working correctly. 
+    Go Back to Server Profiles and select check. This will check the status.  
+10. Now access the HAC through local   **iVMS**.  

@@ -1,0 +1,21 @@
+# RPI Issues
+
+## Docker Not-Responding. 
+When you entered a command related to docker (`docker-compose`, `logs`) and it didn't respond or returns a related error, means that there is an issue with **Docker service** or **Docker Containers**. 
+
+1. Restart the **Docker Service**.
+   ```bash
+    sudo systemctl restart docker
+   ```
+2. Close the current docker session.
+   ```bash
+    docker-compose down
+   ```
+3. Start the containers.
+   ```bash
+    docker-compose up -d
+   ```
+
+:::note
+ This will resync the devices again.
+:::

@@ -1,0 +1,69 @@
+# Ngrok
+
+about
+
+## Setting-up Ngrok
+
+* To install you can follow the methods shwon in [here](/docs/essentials.md/#ngrok-remote-connection).  
+* When forwarding a port through `ngrok <type> <port>` it doesn't runs on **background**.  
+  To make it runs on background.
+  ```bash
+   ngrok tcp 22 &
+  ```  
+  This will only outputs `process id`. to get the logs. we can create a `ngrok.log` file and push the logs into it.
+  ```bash
+   ngrok tcp 22 --log=stdout > ngrok.log 2>&1 & 
+  ```  
+  To see the logs
+  ```bash
+   $ tail ngrok.log 
+   $ cat ngrok.log
+  ```
+  Stop the ngrok
+  ```bash
+   pkill ngrok
+  ```
+
+## Make Ngrok Runs Automatically
+This is about making **Ngrok runs automatically on boot**. There are several ways to do it. 
+
+* **Creating a Systemd Service**
+  1. Create a new service file.  
+     ```bash
+      sudo nano /etc/systemd/system/ngrok.service
+     ```
+  
+  4. Paste this
+     ```text
+     [Unit]
+     Description=Ngrok Tunnel
+     After=network.target
+
+     [Service]
+     ExecStart=/home/pi/.nvm/versions/node/v14.17.0/bin/ngrok tcp 22 --authtoken=YOUR_AUTHTOKEN 
+     Restart=on-failure
+     RestartSec=10s
+     User=pi
+     Group=pi
+     WorkingDirectory=/home/pi
+     Environment="PATH=/home/pi/.nvm/versions/node/v14.17.0/bin:/usr/local/bin:/usr/bin:/bin"
+     StandardOutput=append:/home/pi/ngrok.log
+     StandardError=append:/home/pi/ngrok-error.log
+
+     [Install]
+     WantedBy=multi-user.target
+     ```  
+     Replace `YOUR_AUTHTOKEN`  
+  1. Enable the service to start on boot.
+     ```bash
+      sudo systemctl enable ngrok
+     ```
+  2. Start it manually
+     ```bash
+      sudo systemctl start ngrok
+     ``` 
+  3. Check the service is running.
+     ```bash
+      sudo systemctl status ngrok
+     ```
+ <span style={{ color: "red"}}>The output port is change every time the Ngrok restart. Only paid account have static ports.</span>

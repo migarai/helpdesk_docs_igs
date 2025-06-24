@@ -1,0 +1,83 @@
+# Docker
+
+## Basic Usage
+* Stop/ Start the **Docker Service**.  
+   ```bash
+    $ sudo service docker stop
+    $ sudo service docker start
+   ```
+   The deafault process is docker automatically starts the previous containers to change that.
+   ```bash
+    docker update --restart=no $(docker ps -a -q)
+   ```
+   Then again **restart** the **Docker service**.
+* Starting **Docker containers**
+   * Starting existing containers.
+    ```bash
+     docker-compose up -d
+    ```
+   * Force rebuild images before starting containers.
+    ```bash
+     docker-compose up --build --force-recreate -d
+    ```
+* This can also be used to restart **Docker Service**.
+  ```bash
+   sudo systemctl restart docker
+  ```
+* Remove **Docker Images**.  
+  ⚠️This will completely wipe Docker setup.
+  * To delete all containers including its volumes.  
+  (<span style={{color: "red"}}>Deletes all containers, whether running or stopped, along with their anonymous volumes.</span>)
+  ```bash
+   docker rm -vf $(docker ps -aq)
+  ```
+  * To delete all the images.  
+  (<span style={{ color: "red" }}>Deletes all docker images, even if containers depend on them.</span>)
+  ```bash
+   docker rmi -f $(docker images -aq)
+  ```
+* Remove **Unused Resources**.  
+  This removes unused images, stopped containers, unused networks.
+  ```bash
+   docker system prune -a
+  ```
+* Get **Docker Logs**.  
+  ```bash
+   docker logs --since <date> ig-client > <log_file_name>
+  ```
+  example:
+  ```bash
+   docker logs --since 2023-10-01T14:00:00 ig-client > logs.since.1.10.23txt
+  ```
+  If `logs` command didn't work out use this,
+  ```bash
+   $ docker logs ig-client -n 20 --follow
+   $ docker logs ig-es-logger -n 20 --follow
+  ```
+* See the all containers. (active and stopped)
+  ```bash
+   docker ps -a
+  ``` 
+  only to see active containers.
+  ```bash
+   docker ps
+  ```
+* Get a  JSON-formatted output, including environment variables, volume mounts, network settings, etc.
+  ```bash
+   docker inspect <container>
+  ```
+  replace `container`.
+
+
+## Errors
+### Timeout Error
+If the error looks like this,
+```bash
+ UnixHTTPConnectionPool(host='localhost', port=None): Read timed out. (read timeout=70)
+```
+By increasing timeout limit may fix it.
+```bash
+ $ export DOCKER_CLIENT_TIMEOUT=120
+ $ export COMPOSE_HTTP_TIMEOUT=120
+```
+
