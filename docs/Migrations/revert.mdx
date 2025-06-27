@@ -1,0 +1,36 @@
+# Revert to Legacy
+In a case of a migration have issues. We need to revert back to the original setup.(Docker)
+
+1. Stop **pm2** process and stop daemon.
+  ```
+  $ pm2 stop all
+  $ pm2 delete all
+  & pm2 save
+  ```
+2. Restore the `old.client` to `client`. From root,
+  ```
+  mv old.client client
+  ```
+3. Restore **Cron Jobs**.
+  ```
+  crontab -e
+  ```
+  * Uncomment the commented line.
+  * change `old.client` to `client`.
+4. Wipe the users in devices.
+5. Refresh AWS login.
+  ```
+  aws ecr get-login-password --region ap-south-1 | docker login --
+  username AWS --password-stdin 312466207882.dkr.ecr.ap-south-
+  1.amazonaws.com
+  ```
+6. Go to `client` directory.
+7. Start the docker container.
+  ```
+  docker-compose start -d
+  ```
+8. Monitor logs for successfull sync.
+  ```
+  logs
+  ```
+9. Check the device's user count.

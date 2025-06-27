@@ -1,10 +1,10 @@
 # V2-Ref
 
 ## Moving Legacy RPI to v2-ref RPI
-This is about when we need to move a legacy(v1) firmware RPI to the v2-ref environment remotely.  
+This is about when we need to move a legacy(v1) firmware RPI to the v2-ref environment remotely.
 
-1. Connect to RPI.  
-2.  Install [nvm](/docs/General/node#nvm) version 19   
+1. Connect to RPI.
+2.  Install [nvm](/docs/General/node#nvm) version 19
     ```bash
     $ nvm install 19
     $ nvm alias default 19.x.x
@@ -14,98 +14,98 @@ This is about when we need to move a legacy(v1) firmware RPI to the v2-ref envir
     ```
     nvm install 19 && nvm alias default 19 && nvm uninstall 14
     ```
-4. Install [yarn](/docs/General/node#yarn) and [pm2](/docs/General/pm2).   
+4. Install [yarn](/docs/General/node#yarn) and [pm2](/docs/General/pm2).
    ```bash
    npm install -g yarn pm2
    ```
 5. Move legacy files (docker setup)
    ```bash
    mv client old.client
-   ```  
+   ```
 6. Create folder for v2 setup
    ```bash
    mkdir v2Client
    ```
-7. Edit **cron table**  
+7. Edit **cron table**
    ```bash
    crontab -e
-   ```  
-   Comment out the last line (sedn cron) and change the "client" to "old.client" in  first line.   
+   ```
+   Comment out the last line (sedn cron) and change the "client" to "old.client" in  first line.
    ![Crontab](/images/crontab.edit.png)
 8. install pm2 as a service.
    ```bash
    pm2 start up
    ```
    :::note
-   If above command didn't work, use the below command.   
+   If above command didn't work, use the below command.
    ```bash
    pm2 startup
    ```
-   :::  
-   Proceed with displayed steps.   
-9. Start [Ngrok](/docs/essentials#ngrok-remote-connection).  
+   :::
+   Proceed with displayed steps.
+9. Start [Ngrok](/docs/essentials#ngrok-remote-connection).
    ```bash
    ngrok tcp 22
-   ```  
-   Get the **address** and **port**.   
-10. Remote connect from [**WinSCP**}(/docs/essentials#using-ngrok-and-winscp).  
-11. Get the [**V2-ref Firmaware**](https://360holdings-my.sharepoint.com/:u:/g/personal/migaram_i360_lk/EZ8sHwHyHrNAoPg0Vg8kxBIBqdPKxC0J7FQR_ZFUz5w_nw?e=mCTZyb) and extract its content. Paste the files in `/v2Client`   
-    ![WinSCP v2Client](/images/winscp.v2client.png)  
-12. [Get the IoT Credentials](/docs/essentials#get-iot-credentials) and paste in `v2Client/creds/`.  
-13. Terminate **Ngrok** session and exit **WinSCP**.  
-14. `cd` to `/v2Client`.  
-15. Edit `.env` file. (Can do this with WinSCP as well.)  
-    * `CLIENT_ID` - IoT Thing name (*A396_3lxwHVymlR*)   
-    * Change `TIMEZOTNE` to correct spellings `TIMEZONE`. Add the Correct time zone. (*Europe/London*)  
-    * `TZX` - timezone (*Europe/London*)  
-    * `CLIENT` - Add the client name.   
-    * `Project` - Add the site name.   
-16. Install dependencies and build project.  
+   ```
+   Get the **address** and **port**.
+10. Remote connect from [**WinSCP**}(/docs/essentials#using-ngrok-and-winscp).
+11. Get the [**V2-ref Firmaware**](https://360holdings-my.sharepoint.com/:f:/g/personal/migaram_i360_lk/EuD83vpI4FZKgaBbWA9nYRwBP1QbZLWGWDk-rFhSt8HTxA?e=rrbmbG) and extract its content. Paste the files in `/v2Client`
+    ![WinSCP v2Client](/images/winscp.v2client.png)
+12. [Get the IoT Credentials](/docs/essentials#get-iot-credentials) and paste in `v2Client/creds/`.
+13. Terminate **Ngrok** session and exit **WinSCP**.
+14. `cd` to `/v2Client`.
+15. Edit `.env` file. (Can do this with WinSCP as well.)
+    * `CLIENT_ID` - IoT Thing name (*A396_3lxwHVymlR*)
+    * Change `TIMEZOTNE` to correct spellings `TIMEZONE`. Add the Correct time zone. (*Europe/London*)
+    * `TZX` - timezone (*Europe/London*)
+    * `CLIENT` - Add the client name.
+    * `Project` - Add the site name.
+16. Install dependencies and build project.
     ```bash
     $ yarn
     $ yarn build
-    ```  
-    Build will take few minutes.   
-17. Install Python dependencies.   
+    ```
+    Build will take few minutes.
+17. Install Python dependencies.
     ```bash
     python3 -m pip install Flask python-dotenv
-    ```  
-18. Delete `src` folder.  
+    ```
+18. Delete `src` folder.
     ```bash
     rm -r src
-    ```  
-19. Start pm2 service.  
+    ```
+19. Start pm2 service.
     ```bash
     pm2 start ecosystem.config.js
-    ```  
-20. Save this pm2 instance so it will start automatically after a reboot.  
+    ```
+20. Save this pm2 instance so it will start automatically after a reboot.
     ```bash
     pm2 save
-    ```  
+    ```
     :::tip
-    Check again after RPI reboot to ensure the pm2 running automatically.  
+    Check again after RPI reboot to ensure the pm2 running automatically.
     ```bash
     pm2 logs
     ```
-    :::  
+    :::
 
-<span style={{ color:"red"}}>**Due to an issue in REF environment, The IoT Things will not connect correctly. In that case follow below steps.**</span>  
+<span style={{ color:"red"}}>**Due to an issue in REF environment, The IoT Things will not connect correctly. In that case follow below steps.**</span>
 
-![IoT Thing Issue](/images/iotthing.error.png)   
+![IoT Thing Issue](/images/iotthing.error.png)
 
-1. Go to **AWS IoT Core** console. ([link](https://ap-south-1.console.aws.amazon.com/iot/home?region=ap-south-1#/home)). The region must be set to **Asia Pacific (Mumbai)**.  
-2. Under the "Manage", `All devices` >> `Things` . This will display all the IoT Things created accross platform.  Selec the relevant thing.  
-3. Navigate to `Device shadows`. There should be a shadow named `CONFIG`. Select it and go to edit.  
-   ![IoT Device Shadows](/images/iotcore.shadows.png)  
-4. Add the following key and value.  
+1. Go to **AWS IoT Core** console. ([link](https://ap-south-1.console.aws.amazon.com/iot/home?region=ap-south-1#/home)). The region must be set to **Asia Pacific (Mumbai)**.
+2. Under the "Manage", `All devices` >> `Things` . This will display all the IoT Things created accross platform.  Selec the relevant thing.
+3. Navigate to `Device shadows`. There should be a shadow named `CONFIG`. Select it and go to edit.
+   ![IoT Device Shadows](/images/iotcore.shadows.png)
+4. Add the following key and value.
    ```bash
    "tenant": "DtVd"
-   ```  
-   ![IoT Shadow Tenant](/images/iotcore.shadow.tenant.png)  
-5. The restart the service in RPI. 
+   ```
+   ![IoT Shadow Tenant](/images/iotcore.shadow.tenant.png)
+5. The restart the service in RPI.
    ```bash
    pm2 restart all
-   ```  
+   ```
 :::tip
-If couldn't find the `CONFIG` shadow there, Update the related controller in IGS and it should appear.   
+If couldn't find the `CONFIG` shadow there, Update the related controller in IGS and it should appear.
 :::

@@ -1,0 +1,135 @@
+# v2 - Legacy - Temp (Standing FR)
+
+In this mostly use **One FR** for both entry an exit. In this **RPI Image** <span style={{ color: "red" }}>do not have **Docker**</span>, It directly runs from **npm** and **pm2**.
+**pm2 (Process Manager for Node.js)** is production program manager for node applications, it allows you to keeps app running in the background, auto-restart on failure.
+:::info
+pm2 commands - [here](/docs/General/pm2.mdx#pm2-commands)
+:::
+
+The RPI login is: `igs`
+
+## Setting-up a Standing FR
+**Standing FR** reffers to a FR that functions for both entry and exit. (*legacy systems used two seperate FRs for entry and exit*).
+1. Follow the default steps same as legacy system when [setting up **IGS portal**](/docs/Installations/legacy/#steps).
+   When attaching the devices to a gate change these for a **Standing FR**.
+   ![V2 Turnstile](/images/v2.turnstile.png)
+   As you can see,
+   only set `In Scanner IP Address` and `Door 1: True`
+2. Do the `hostname` and `OpenVPN` configurations in **RPI**.
+3. Follo the steps in [here](#legacy-to-v2) to configure RPI from **Legacy to v2**.
+4. After that you need to [**update the firmware of FRs**](#fr-firmware-update-v2).
+5.
+
+
+## Legacy to v2
+In **Custom Installation for Standing FRs** is done by modifying the legacy environment to v2 with customizations. It is recommend to install legacy firmware (v1) first before adding v2 firmware.
+1. Install [nvm](/docs/General/node#nvm) version 19
+   ```bash
+   $ nvm install 19
+   $ nvm alias default 19.x.x
+   $ nvm uninstall 14
+   ```
+   Single command,
+   ```
+   nvm install 19 && nvm alias default 19 && nvm uninstall 14
+   ```
+2. Install [yarn](/docs/General/node#yarn) and [pm2](/docs/General/pm2).
+   ```bash
+   npm install -g yarn pm2
+   ```
+3. Move legacy files (docker setup)
+   ```bash
+   mv client old.client
+   ```
+4. Create folder for v2 setup
+   ```bash
+   mkdir v2Client
+   ```
+5. Edit **cron table**
+   ```bash
+   crontab -e
+   ```
+   Comment out the last line (sedn cron) and change the "client" to "old.client" in  first line.
+   ![Crontab](/images/crontab.edit.png)
+6. install pm2 as a service.
+   ```bash
+   pm2 start up
+   ```
+   :::note
+   If above command didn't work, use the below command.
+   ```bash
+   pm2 startup
+   ```
+   :::
+   Proceed with displayed steps.
+7. Start [Ngrok](/docs/essentials#ngrok-remote-connection).
+   ```bash
+   ngrok tcp 22
+   ```
+   Get the **address** and **port**.
+8. Remote connect from [**WinSCP**}(/docs/essentials#using-ngrok-and-winscp).
+9. Get the [**Cutom RPI Frimware(v2)**](https://360holdings-my.sharepoint.com/:u:/g/personal/migaram_i360_lk/EfgAF88zg_BCrIiujfQhcrsBFMn3i5zy65J7czXdNwIVkw?e=y8R7sX) and extract its content. Paste the files in `/v2Client`
+    ![WinSCP v2Client](/images/winscp.v2client.png)
+10. [Get the IoT Credentials](/docs/essentials#get-iot-credentials) and paste in `v2Client/creds/`.
+11. Terminate **Ngrok** session and exit **WinSCP**.
+12. `cd` to `/v2Client`.
+13. Edit `.env` file. (Can do this with WinSCP as well.)
+    * `CLIENT_ID` - IoT Thing name (*A396_3lxwHVymlR*)
+    * Change `TIMEZOTNE` to correct spellings `TIMEZONE`. Add the Correct time zone. (*Europe/London*)
+    * `TZX` - timezone (*Europe/London*)
+    * `CLIENT` - Add the client name.
+    * `Project` - Add the site name.
+14. Install dependencies and build project.
+    ```bash
+    $ yarn
+    $ yarn build
+    ```
+    Build will take few minutes.
+15. Install Python dependencies.
+    ```bash
+    python3 -m pip install Flask python-dotenv
+    ```
+16. Delete `src` folder.
+    ```bash
+    rm -r src
+    ```
+17. Start pm2 service.
+    ```bash
+    pm2 start ecosystem.config.js
+    ```
+18. Save this pm2 instance so it will start automatically after a reboot.
+    ```bash
+    pm2 save
+    ```
+    :::tip
+    Check again after RPI reboot to ensure the pm2 running automatically.
+    ```bash
+    pm2 logs
+    ```
+    :::
+
+## FR Firmware Update v2
+For the **Standing FRs** they are using different device form the default. To change the **firmware settings** follow these steps.
+1. Client will send a **Anydesk address** to remote access their PC which is in same network as the FR that need to configure.
+   ![ANydesk](/images/anydesk.png)
+   wait till client accept your connection.
+2. Go to [iVMS 4200](/docs/essentials#ivms-4200). If the device is not added and available in the `online devices` section. activate the device and add it to **iVMS Device**.
+   Most of the time this is how client's **iVMS** will look like,
+   ![Anydesk iVMS](/images/anydesk.ivms.png)
+   As shown, the device is already configured previously. To add latest configurations we need to **update firmware** then **apply the configurations**.
+   Click on `Setting` icon related to the device, under `System` >> `Device Information` is the current firmware details.
+   ![FR Stock FW](/images/fr.stock.fw.png)
+3. Once accessed to the client pc, Check for the **Latest FR Firmware** is available. If not download it from [**here**](https://360holdings-my.sharepoint.com/:f:/g/personal/lahirub_i360_lk/Ek7gK3qvPYNFoY7M3D5yK1MBx9GZY6iEGCkJz0XrTGUP2Q?e=YjiuK8) . (The zip file contains both firmware and settings configs.)
+   ex: *You should have two files like this for the FR configuration*
+   ![FR FW Download](/images/fr.download.fw.png)
+   <span style={{ color: "red"}}>When choosing the firmware, carefully check the device model and existing firmware</span>
+4. Go to `System` >> `System Maintenance` >> under the firmware section, Uplaod the correct file (`*.dav`).
+   ![Upload FW](/images/anydesk.fr.fw.png)
+5. After firmware update, you need to remove **Previous configurations**.
+   If you cannot access the FR from **iVMS**. paste the **FR IP address**(ex: *192.168.1.165*) in browser, this will direct you to FR's web portal.
+   To reset FR, Select the device and click on `Settings` icon >> `Maintenance and Security` >> `Backup and Reset` >> `Restore All`
+   ![Reset FR](/images/fr.reset.png)
+   (Most of the time <span style={{ color:"red" }}>this will make device **inactive** and remove from the known devices</span>. Check [**Activate devices from iVMS**](/docs/essentials#ivms-4200))
+6. Then you need to **activate** and **add** the FR again.
+7. Go to FR's `settings` >> `Maintenance and Security` >> `Backup and Reset` >> upload the **configuration file (`*.config`)**.
+8. After the reboot again check the settings are applied. (DST, Smart).
