@@ -10,11 +10,11 @@ In most cases the migration is happens for sites that are already in use. It is 
   2. Select `dtvd_hammertech` database.
   3. Select `assignments` collection.
   4. Run the following Aggregation. <span style={{color: 'red'}}>Replace the **project** value with **legacy project Id**.</span>
-  ```bash title="Raw Aggregation"
+  ```bash title="ht_list.csv"
   [
     {
       $match: {
-        project: "614afe16bf395e9e969c75a8",
+        project: "67859e3b52530bb0118cf0d9",
       },
     },
     {
@@ -29,6 +29,15 @@ In most cases the migration is happens for sites that are already in use. It is 
       $unwind: {
         path: "$worker",
         preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $match: {
+        "worker.ig_id": {
+          $exists: true,
+          $ne: null,
+          $ne: "",
+        },
       },
     },
     {
@@ -42,39 +51,7 @@ In most cases the migration is happens for sites that are already in use. It is 
     },
   ]
   ```
-  ```mongosh title="Mongosh Code"
-  db.assignments.aggregate([
-    {
-      $match: {
-        project: "614afe16bf395e9e969c75a8",
-      },
-    },
-    {
-      $lookup: {
-        from: "workers",
-        localField: "worker",
-        foreignField: "ig_id",
-        as: "worker",
-      },
-    },
-    {
-      $unwind: {
-        path: "$worker",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        first: "$worker.first",
-        last: "$worker.last",
-        hammertech_id: "$worker.hammertech_id",
-        ig_id: "$worker.ig_id",
-      },
-    },
-  ])
-  ```
-  5. Export the results as `ht_list.csv`
+    5. Export the results as `ht_list.csv`
     In MongoDB compass, `Export` >> `.csv`
 
 ### 2. Export QR Access Key List.
@@ -83,54 +60,26 @@ In most cases the migration is happens for sites that are already in use. It is 
   2. Select `assignments` collections.
   3. Run the following Aggregation.
     <span style={{color: 'red'}}>Replace the **site** value with **legacy project Id**.</span>
-    ```txt
+    ```txt title="qr_list.csv"
     [
       {
         $match: {
-          site: ObjectId("617684a9bec68e049d993ea5"),
+          site: ObjectId("67859e3b52530bb0118cf0d9"),
         },
       },
       {
         $lookup: {
           from: "accesskeys",
-          let: {
-            userId: "$user",
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    {
-                      $eq: ["$user", "$$userId"],
-                    },
-                    {
-                      $eq: [
-                        {
-                          $type: "$qr",
-                        },
-                        "object",
-                      ],
-                    },
-                  ],
-                },
-              },
-            },
-          ],
-          as: "accesskey",
+          localField: "user",
+          foreignField: "user",
+          as: "accessKey",
         },
       },
       {
         $unwind: {
-          path: "$accesskey",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $match: {
-          accesskey: {
-            $exists: true,
-          },
+          path: "$accessKey",
+          includeArrayIndex: "0",
+          preserveNullAndEmptyArrays: false,
         },
       },
       {
@@ -144,14 +93,24 @@ In most cases the migration is happens for sites that are already in use. It is 
       {
         $unwind: {
           path: "$user",
-          preserveNullAndEmptyArrays: true,
+          includeArrayIndex: "0",
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $match: {
+          "accessKey.qr": {
+            $exists: true,
+          },
+          "accessKey.kind": "ACCESS",
+          "accessKey.status": "ACTIVE",
         },
       },
       {
         $project: {
           _id: 1,
           name: "$user.fullName",
-          qrCode: "$accesskey.legibleKey",
+          qrCode: "$accessKey.legibleKey",
           user: "$user._id",
         },
       },
@@ -239,7 +198,9 @@ In most cases the migration is happens for sites that are already in use. It is 
     * `Project` - Add the site name.
     :::important
     If the setup is using **Dahua** devices,
-    `TZ_OFFSET` = 1
+    * `TZ_OFFSET` = 1
+    * Change the RPI timezone to readers timezone.
+      `sudo raspi-config`
     :::
 16. Install dependencies and build project.
     ```bash

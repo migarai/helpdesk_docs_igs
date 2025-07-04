@@ -1,0 +1,188 @@
+# Migrating QR/FOB From One Env to Another.
+
+When sites are migrated to a new environment, We need to manually migrate the old QRs to keep the same legible key.
+:::danger
+QRs need to migrate before HT sync in new environment.
+:::
+:::note
+Always best to test with test project before trying the production.
+:::
+1. Download the script from [here](https://360holdings-my.sharepoint.com/:u:/g/personal/migaram_i360_lk/EdiNNFmWMOhNmS-hPjwtbnsB6Gq63iWi-BsNDM4-rDHG_g?e=0c7YWW)
+2. Install packages. **Node 23+ require**.
+  ```
+  yarn
+  ```
+3. Get the `ht_list.csv` from old environment. Use this aggregation for **Legacy**.
+  ```text title="ht_list.csv"
+  [
+    {
+      $match: {
+        project: "67859e3b52530bb0118cf0d9",
+      },
+    },
+    {
+      $lookup: {
+        from: "workers",
+        localField: "worker",
+        foreignField: "ig_id",
+        as: "worker",
+      },
+    },
+    {
+      $unwind: {
+        path: "$worker",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $match: {
+        "worker.ig_id": {
+          $exists: true,
+          $ne: null,
+          $ne: "",
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        first: "$worker.first",
+        last: "$worker.last",
+        hammertech_id: "$worker.hammertech_id",
+        ig_id: "$worker.ig_id",
+      },
+    },
+  ]
+  ```
+4. Get the `qr_list.csv` from the old env. This aggregation for **Legacy**.
+  ```
+  [
+    {
+      $match: {
+        site: ObjectId("67859e3b52530bb0118cf0d9"),
+      },
+    },
+    {
+      $lookup: {
+        from: "accesskeys",
+        localField: "user",
+        foreignField: "user",
+        as: "accessKey",
+      },
+    },
+    {
+      $unwind: {
+        path: "$accessKey",
+        includeArrayIndex: "0",
+        preserveNullAndEmptyArrays: false,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    {
+      $unwind: {
+        path: "$user",
+        includeArrayIndex: "0",
+        preserveNullAndEmptyArrays: false,
+      },
+    },
+    {
+      $match: {
+        "accessKey.qr": {
+          $exists: true,
+        },
+        "accessKey.kind": "ACCESS",
+        "accessKey.status": "ACTIVE",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        name: "$user.fullName",
+        qrCode: "$accessKey.legibleKey",
+        user: "$user._id",
+      },
+    },
+  ]
+  ```
+5. Get `ref_workers.csv` from new env.
+  ```
+  [
+    {
+      $match: {
+        project: "67859e3b52530bb0118cf0d9",
+      },
+    },
+    {
+      $lookup: {
+        from: "workers",
+        localField: "worker",
+        foreignField: "ig_id",
+        as: "worker",
+      },
+    },
+    {
+      $unwind: {
+        path: "$worker",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $match: {
+        "worker.ig_id": {
+          $exists: true,
+          $ne: null,
+          $ne: "",
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        first: "$worker.first",
+        last: "$worker.last",
+        hammertech_id: "$worker.hammertech_id",
+        ig_id: "$worker.ig_id",
+      },
+    },
+  ]
+  ```
+
+6. Place the three files. `ht_list.csv`, `qr_list.csv` and `ref_workers.csv`. in `../data/qr_migrator/` folder.
+7. Run `Key Fob Merger`.
+   ```
+   yarn kfbm
+   ```
+8. This will generate `target.csv`.
+9. Go to `qr_migrator.ts`.
+   :::info
+   Change the `postQrCode` body to,
+   ```ts
+   const body = {
+    user,
+    type: "ACCESS",
+    key: `legacy-qr-${custom}`,
+   };
+   ```
+   When migrating **legacy** to **new prod**.
+   :::
+   * Change `API_URL` according to the new env.
+      ```text title="prod-qa"
+     https://apiv2-qa.irongatesolutions.com.au/employee/1.0/DtVd/accessKey/qr
+      ```
+      ```text title="prod"
+      https://apiv2.irongatesolutions.com.au/employee/1.0/DtVd/accessKey/qr
+      ```
+      ```text title="ref"
+      ```
+   * Change `AUTH_TOKEN` according to the moving env.
+10.  Then run the `QR Migrator`.
+   ```
+   yarn qrmgtr
+   ```
