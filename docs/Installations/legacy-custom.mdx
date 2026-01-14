@@ -47,6 +47,16 @@ This is about when we need to move a legacy setup which runs on the docker to pm
    ```bash
    ngrok tcp 22
    ```
+   Install Ngrok and add auth token.
+     ```
+     curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+       | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+       && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+       | sudo tee /etc/apt/sources.list.d/ngrok.list \
+       && sudo apt update \
+       && sudo apt install ngrok \
+       && ngrok config add-authtoken 2lzztjZonSd85bbS1a138CUveWB_5B4DgAP4jH4UUFKFnwuuf
+     ```
    Get the **address** and **port**.
 10. Remote connect from [**WinSCP**}(/docs/essentials#using-ngrok-and-winscp).
 11. Get the [**Legacy-Custom Code**](https://360holdings-my.sharepoint.com/:f:/g/personal/migaram_i360_lk/EjLxI6ENmLFEt_3TGTLndxcBsuJTBHSrciq1ybTKi3LoFg?e=NYd0dm) and extract its content. Paste the files in `/v2Client`

@@ -66,6 +66,16 @@ In **Custom Installation for Standing FRs** is done by modifying the legacy envi
    ```bash
    ngrok tcp 22
    ```
+   Install Ngrok and add auth token.
+     ```
+     curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+       | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+       && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+       | sudo tee /etc/apt/sources.list.d/ngrok.list \
+       && sudo apt update \
+       && sudo apt install ngrok \
+       && ngrok config add-authtoken 2lzztjZonSd85bbS1a138CUveWB_5B4DgAP4jH4UUFKFnwuuf
+     ```
    Get the **address** and **port**.
 8. Remote connect from [**WinSCP**}(/docs/essentials#using-ngrok-and-winscp).
 9. Get the [**Cutom RPI Frimware(v2)**](https://360holdings-my.sharepoint.com/:u:/g/personal/migaram_i360_lk/EfgAF88zg_BCrIiujfQhcrsBFMn3i5zy65J7czXdNwIVkw?e=y8R7sX) and extract its content. Paste the files in `/v2Client`

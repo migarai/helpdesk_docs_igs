@@ -64,56 +64,56 @@ In most cases the migration is happens for sites that are already in use. It is 
     [
       {
         $match: {
-          site: ObjectId("67859e3b52530bb0118cf0d9"),
-        },
+          site: ObjectId("67859e3b52530bb0118cf0d9")
+        }
       },
       {
         $lookup: {
           from: "accesskeys",
           localField: "user",
           foreignField: "user",
-          as: "accessKey",
-        },
+          as: "accessKey"
+        }
       },
       {
         $unwind: {
           path: "$accessKey",
           includeArrayIndex: "0",
-          preserveNullAndEmptyArrays: false,
-        },
+          preserveNullAndEmptyArrays: false
+        }
       },
       {
         $lookup: {
           from: "users",
           localField: "user",
           foreignField: "_id",
-          as: "user",
-        },
+          as: "user"
+        }
       },
       {
         $unwind: {
           path: "$user",
           includeArrayIndex: "0",
-          preserveNullAndEmptyArrays: false,
-        },
+          preserveNullAndEmptyArrays: false
+        }
       },
       {
         $match: {
           "accessKey.qr": {
-            $exists: true,
+            $exists: true
           },
           "accessKey.kind": "ACCESS",
-          "accessKey.status": "ACTIVE",
-        },
+          "accessKey.status": "ACTIVE"
+        }
       },
       {
         $project: {
           _id: 1,
           name: "$user.fullName",
           qrCode: "$accessKey.legibleKey",
-          user: "$user._id",
-        },
-      },
+          user: "$user._id"
+        }
+      }
     ]
     ```
   4. Export the results as qr_list.csv.
@@ -138,6 +138,10 @@ In most cases the migration is happens for sites that are already in use. It is 
   Usually, there will be a checklist that need to be filled.
   :::
 
+## Stop Docker Container
+  ```
+  docker-compose down
+  ```
 ## Migration
 1. Connect to RPI.
 2.  Install [nvm](/docs/General/node#nvm) version 19
@@ -183,6 +187,16 @@ In most cases the migration is happens for sites that are already in use. It is 
    ```bash
    ngrok tcp 22
    ```
+   Install Ngrok and add auth token.
+     ```
+     curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+       | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+       && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+       | sudo tee /etc/apt/sources.list.d/ngrok.list \
+       && sudo apt update \
+       && sudo apt install ngrok \
+       && ngrok config add-authtoken 2lzztjZonSd85bbS1a138CUveWB_5B4DgAP4jH4UUFKFnwuuf
+     ```
    Get the **address** and **port**.
 10. Remote connect from [**WinSCP**}(/docs/essentials#using-ngrok-and-winscp).
 11. Get the [**prod code**](https://360holdings-my.sharepoint.com/:u:/g/personal/migaram_i360_lk/EZ8sHwHyHrNAoPg0Vg8kxBIBqdPKxC0J7FQR_ZFUz5w_nw?e=mCTZyb) and extract its content. Paste the files in `/v2Client`
